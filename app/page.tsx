@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef, useCallback, useEffect } from "react"
+import { useState, useRef, useCallback } from "react"
 import {
   AlertTriangle,
   Code,
@@ -25,6 +25,8 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { motion } from "framer-motion"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { useTheme } from "next-themes"
 
 // Add this function to safely check if we're in the browser
 const isBrowser = () => typeof window !== "undefined"
@@ -241,52 +243,16 @@ export default function CodeAnalyzer() {
   }> | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [showLoadingAnimation, setShowLoadingAnimation] = useState(false)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-
-  // Initialize audio element
-  useEffect(() => {
-    if (isBrowser()) {
-      // Create audio element with proper error handling
-      audioRef.current = new Audio()
-      audioRef.current.src = "/meow.mp3" // Updated path directly in public folder
-
-      // Preload the audio
-      audioRef.current.load()
-
-      // Add error handling
-      audioRef.current.addEventListener("error", (e) => {
-        console.error("Audio error:", e)
-        console.error("Audio error code:", audioRef.current?.error?.code)
-        console.error("Audio error message:", audioRef.current?.error?.message)
-      })
-    }
-  }, [])
+  const { theme } = useTheme()
 
   const playMeow = () => {
-    if (audioRef.current) {
-      // Reset the audio to the beginning
-      audioRef.current.currentTime = 0
-
-      // Play with proper error handling
-      const playPromise = audioRef.current.play()
-
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            // Playback started successfully
-          })
-          .catch((err) => {
-            console.error("Audio play failed:", err)
-            // Fallback - at least provide visual feedback
-            const catIcon = document.querySelector(".cat-icon")
-            if (catIcon) {
-              catIcon.classList.add("animate-bounce")
-              setTimeout(() => {
-                catIcon.classList.remove("animate-bounce")
-              }, 500)
-            }
-          })
-      }
+    // Visual animation only - no sound
+    const catIcon = document.querySelector(".cat-icon")
+    if (catIcon) {
+      catIcon.classList.add("animate-wiggle")
+      setTimeout(() => {
+        catIcon.classList.remove("animate-wiggle")
+      }, 500)
     }
   }
 
@@ -522,27 +488,30 @@ export default function CodeAnalyzer() {
   }
 
   return (
-    <main className="min-h-screen w-full bg-gradient-to-b from-background to-black text-foreground p-4 sm:p-6 md:p-10 lg:p-16">
+    <main className="min-h-screen w-full bg-gradient-to-b from-background to-black dark:from-background dark:to-black text-foreground p-4 sm:p-6 md:p-10 lg:p-16">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex items-center justify-between mb-12 border-b border-border/40 pb-6 max-w-7xl mx-auto w-full"
+        className="flex items-center justify-between mb-8 sm:mb-12 border-b border-border/40 pb-4 sm:pb-6 max-w-7xl mx-auto w-full"
       >
-        <h1 className="text-3xl font-bold flex items-center">
+        <h1 className="text-2xl sm:text-3xl font-bold flex items-center">
           <motion.div
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={playMeow}
             className="cursor-pointer"
           >
-            <Cat className="mr-3 h-8 w-8 text-purple-400 cat-icon" />
+            <Cat className="mr-2 sm:mr-3 h-6 w-6 sm:h-8 sm:w-8 text-black dark:text-purple-400 cat-icon" />
           </motion.div>
           <span className="gradient-text">ByteMePlz</span>
         </h1>
-        <div className="hidden md:flex items-center space-x-2 text-sm text-muted-foreground">
-          <Shield className="h-4 w-4 text-purple-400" />
-          <span>Malware Detection Engine</span>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <div className="hidden md:flex items-center space-x-2 text-sm text-muted-foreground">
+            <Shield className="h-4 w-4 text-black dark:text-purple-400" />
+            <span>Malware Detection Engine</span>
+          </div>
         </div>
       </motion.div>
 
@@ -553,10 +522,10 @@ export default function CodeAnalyzer() {
         className="max-w-7xl mx-auto w-full"
       >
         <Tabs defaultValue="upload" className="mb-12" onValueChange={handleTabChange}>
-          <TabsList className="w-full md:w-auto bg-secondary/50 backdrop-blur-sm border border-border/30 rounded-xl p-1 overflow-x-auto flex-nowrap scrollbar-hide">
+          <TabsList className="w-full bg-secondary/50 backdrop-blur-sm border border-border/30 rounded-xl p-1 overflow-x-auto flex-nowrap scrollbar-hide">
             <TabsTrigger
               value="upload"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all duration-200"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all duration-200 flex-1"
             >
               <Upload className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">Upload File</span>
@@ -564,7 +533,7 @@ export default function CodeAnalyzer() {
             </TabsTrigger>
             <TabsTrigger
               value="paste"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all duration-200"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all duration-200 flex-1"
             >
               <Code className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">Paste Code</span>
@@ -572,7 +541,7 @@ export default function CodeAnalyzer() {
             </TabsTrigger>
             <TabsTrigger
               value="signatures"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all duration-200"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all duration-200 flex-1"
             >
               <Search className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">Signature Finder</span>
@@ -580,7 +549,7 @@ export default function CodeAnalyzer() {
             </TabsTrigger>
             <TabsTrigger
               value="skidcheck"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all duration-200"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all duration-200 flex-1"
             >
               <Lightbulb className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">SkidCheck™</span>
@@ -596,7 +565,7 @@ export default function CodeAnalyzer() {
               className="gradient-border"
             >
               <div
-                className="border-2 border-dashed border-border/50 rounded-xl p-10 md:p-16 text-center cursor-pointer hover:border-primary/50 transition-colors bg-secondary/30 backdrop-blur-sm"
+                className="border-2 border-dashed border-border/50 rounded-xl p-6 sm:p-10 md:p-16 text-center cursor-pointer hover:border-primary/50 transition-colors bg-secondary/30 backdrop-blur-sm"
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
@@ -609,9 +578,9 @@ export default function CodeAnalyzer() {
                   accept=".py,.java,.cpp,.c,.h,.js,.ts,.tsx,.ps1,.vbs,.bat,.cmd,.hpp,.class,.sh,.bash,.pl,.rb,.php,.go,.rs,.swift,.kt,.cs"
                 />
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="mb-4">
-                  <FileCode className="h-16 w-16 mx-auto text-primary/70" />
+                  <FileCode className="h-12 w-12 sm:h-16 sm:w-16 mx-auto text-primary/70" />
                 </motion.div>
-                <p className="mb-2 text-xl font-medium">Drag and drop your code file here</p>
+                <p className="mb-2 text-lg sm:text-xl font-medium">Drag and drop your code file here</p>
                 <p className="text-sm text-muted-foreground mb-4">or click to browse</p>
                 <p className="text-xs text-muted-foreground max-w-md mx-auto">
                   Supports Python, Java, C++, JavaScript, TypeScript, PowerShell, PHP, Ruby, Go, Rust, Swift, Kotlin,
@@ -674,7 +643,7 @@ export default function CodeAnalyzer() {
 
               <Textarea
                 placeholder={`Paste your ${language} code here for analysis...`}
-                className="min-h-[400px] border-border/50 bg-secondary/30 backdrop-blur-sm text-foreground rounded-xl resize-none focus:border-primary/50 transition-colors"
+                className="min-h-[300px] sm:min-h-[400px] border-border/50 bg-secondary/30 backdrop-blur-sm text-foreground rounded-xl resize-none focus:border-primary/50 transition-colors"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
               />
@@ -686,10 +655,10 @@ export default function CodeAnalyzer() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="glass rounded-xl p-6 mb-4 border border-border/30"
+              className="glass rounded-xl p-4 sm:p-6 mb-4 border border-border/30"
             >
               <h3 className="text-xl font-bold mb-3 flex items-center">
-                <Search className="mr-2 h-5 w-5 text-purple-400" />
+                <Search className="mr-2 h-5 w-5 text-black dark:text-purple-400" />
                 <span className="gradient-text">Signature Finder</span>
               </h3>
               <p className="text-muted-foreground mb-4">
@@ -719,7 +688,7 @@ export default function CodeAnalyzer() {
               </ul>
               <Textarea
                 placeholder="Paste your code here to find suspicious signatures..."
-                className="min-h-[300px] border-border/50 bg-secondary/50 text-foreground mb-6 rounded-xl resize-none focus:border-primary/50 transition-colors"
+                className="min-h-[200px] sm:min-h-[300px] border-border/50 bg-secondary/50 text-foreground mb-6 rounded-xl resize-none focus:border-primary/50 transition-colors"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
               />
@@ -749,7 +718,7 @@ export default function CodeAnalyzer() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="glass rounded-xl p-6 mb-4 border border-border/30"
+              className="glass rounded-xl p-4 sm:p-6 mb-4 border border-border/30"
             >
               <h3 className="text-xl font-bold mb-3 flex items-center">
                 <Lightbulb className="mr-2 h-5 w-5 text-yellow-400" />
@@ -778,7 +747,7 @@ export default function CodeAnalyzer() {
               </ul>
               <Textarea
                 placeholder={`Paste your ${language} code here for skid level analysis...`}
-                className="min-h-[300px] border-border/50 bg-secondary/50 text-foreground mb-6 rounded-xl resize-none focus:border-primary/50 transition-colors"
+                className="min-h-[200px] sm:min-h-[300px] border-border/50 bg-secondary/50 text-foreground mb-6 rounded-xl resize-none focus:border-primary/50 transition-colors"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
               />
@@ -809,7 +778,7 @@ export default function CodeAnalyzer() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3, duration: 0.5 }}
-        className="flex flex-col sm:flex-row justify-center items-center gap-4 my-12 max-w-7xl mx-auto w-full"
+        className="flex flex-col sm:flex-row justify-center items-center gap-4 my-8 sm:my-12 max-w-7xl mx-auto w-full"
       >
         {!results && !skidResults && !signatureResults && (
           <Button
@@ -821,7 +790,7 @@ export default function CodeAnalyzer() {
                   : handleAnalyze
             }
             disabled={isAnalyzing || !code.trim()}
-            className={`relative overflow-hidden px-8 py-6 text-lg w-full sm:w-auto bg-primary hover:bg-primary/80 rounded-xl transition-all duration-300 shadow-lg`}
+            className={`relative overflow-hidden px-6 py-5 sm:px-8 sm:py-6 text-base sm:text-lg w-full sm:w-auto bg-primary hover:bg-primary/80 rounded-xl transition-all duration-300 shadow-lg`}
           >
             {showLoadingAnimation && <span className="absolute inset-0 loading-shimmer"></span>}
             {isAnalyzing ? (
@@ -863,7 +832,7 @@ export default function CodeAnalyzer() {
         {(results || skidResults || signatureResults) && (
           <Button
             onClick={clearResults}
-            className="relative overflow-hidden px-8 py-6 text-lg w-full sm:w-auto bg-secondary/80 hover:bg-secondary/60 rounded-xl transition-all duration-300 shadow-lg"
+            className="relative overflow-hidden px-6 py-5 sm:px-8 sm:py-6 text-base sm:text-lg w-full sm:w-auto bg-secondary/80 hover:bg-secondary/60 rounded-xl transition-all duration-300 shadow-lg"
           >
             <div className="flex items-center">
               <X className="mr-2 h-5 w-5" />
@@ -878,10 +847,10 @@ export default function CodeAnalyzer() {
           initial="hidden"
           animate="visible"
           variants={containerVariants}
-          className="mt-12 glass p-8 md:p-10 rounded-xl border border-border/30 shadow-lg max-w-7xl mx-auto w-full"
+          className="mt-8 sm:mt-12 glass p-4 sm:p-8 md:p-10 rounded-xl border border-border/30 shadow-lg max-w-7xl mx-auto w-full"
         >
           <motion.div variants={itemVariants} className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold gradient-text">Analysis Results</h2>
+            <h2 className="text-xl sm:text-2xl font-bold gradient-text">Analysis Results</h2>
             <Button
               variant="ghost"
               size="sm"
@@ -894,9 +863,9 @@ export default function CodeAnalyzer() {
 
           <motion.div variants={itemVariants} className="mb-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-              <h3 className="text-xl font-semibold">Malware Score: {results.malwareScore}/100</h3>
+              <h3 className="text-lg sm:text-xl font-semibold">Malware Score: {results.malwareScore}/100</h3>
               <div
-                className={`px-4 py-1.5 rounded-full text-sm font-medium ${
+                className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-sm font-medium ${
                   results.malwareScore >= 75
                     ? "bg-red-900/60 text-red-200"
                     : results.malwareScore >= 50
@@ -913,11 +882,11 @@ export default function CodeAnalyzer() {
             <Progress
               value={results.malwareScore}
               max={100}
-              className="h-3 mb-4 bg-secondary/70 rounded-full overflow-hidden"
+              className="h-2 sm:h-3 mb-4 bg-secondary/70 rounded-full overflow-hidden"
               indicatorClassName={`${getScoreColor(results.malwareScore)} transition-all duration-1000 ease-in-out`}
             />
 
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground mb-4 text-sm sm:text-base">
               {results.detectedBehaviors.length > 5
                 ? "Extremely high risk! This code contains numerous malicious patterns. Where did you even get this?!"
                 : results.malwareScore >= 75
@@ -932,18 +901,20 @@ export default function CodeAnalyzer() {
 
           {results.detectedBehaviors.length > 0 && (
             <motion.div variants={itemVariants}>
-              <Card className="p-6 md:p-8 mb-8 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl overflow-hidden">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <AlertTriangle className="h-5 w-5 mr-2 text-amber-400" />
+              <Card className="p-4 sm:p-6 md:p-8 mb-8 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl overflow-hidden">
+                <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center">
+                  <AlertTriangle className="h-4 sm:h-5 w-4 sm:w-5 mr-2 text-amber-400" />
                   Detected Malicious Behaviors ({results.detectedBehaviors.length})
                 </h3>
 
                 <div className="space-y-3">
                   {results.detectedBehaviors.map((behavior, index) => (
                     <Collapsible key={index} className="border border-border/50 rounded-lg overflow-hidden">
-                      <CollapsibleTrigger className="flex justify-between items-center w-full p-3 hover:bg-secondary/70 transition-colors">
+                      <CollapsibleTrigger className="flex justify-between items-center w-full p-2 sm:p-3 hover:bg-secondary/70 transition-colors">
                         <div className="flex items-center">
-                          <span className={`mr-2 font-medium ${getSeverityColor(behavior.severity)}`}>
+                          <span
+                            className={`mr-2 font-medium ${getSeverityColor(behavior.severity)} text-sm sm:text-base`}
+                          >
                             {behavior.name}
                           </span>
                           <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/70">
@@ -976,12 +947,12 @@ export default function CodeAnalyzer() {
 
           {results.suspiciousImports.length > 0 && (
             <motion.div variants={itemVariants}>
-              <Card className="p-6 md:p-8 mb-8 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl">
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  <AlertTriangle className="h-5 w-5 mr-2 text-amber-400" />
+              <Card className="p-4 sm:p-6 md:p-8 mb-8 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl">
+                <h3 className="text-base sm:text-lg font-semibold mb-3 flex items-center">
+                  <AlertTriangle className="h-4 sm:h-5 w-4 sm:w-5 mr-2 text-amber-400" />
                   Suspicious Imports/Libraries
                 </h3>
-                <div className="bg-background/80 p-4 rounded-lg text-sm font-mono">
+                <div className="bg-background/80 p-3 rounded-lg text-sm font-mono">
                   {results.suspiciousImports.map((imp, index) => (
                     <div key={index} className="mb-1.5 last:mb-0">
                       {imp}
@@ -997,12 +968,12 @@ export default function CodeAnalyzer() {
 
           {results.webhooks.length > 0 && (
             <motion.div variants={itemVariants}>
-              <Card className="p-6 md:p-8 mb-8 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl">
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  <AlertTriangle className="h-5 w-5 mr-2 text-red-400" />
+              <Card className="p-4 sm:p-6 md:p-8 mb-8 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl">
+                <h3 className="text-base sm:text-lg font-semibold mb-3 flex items-center">
+                  <AlertTriangle className="h-4 sm:h-5 w-4 sm:w-5 mr-2 text-red-400" />
                   Discord Webhooks Found
                 </h3>
-                <div className="bg-background/80 p-4 rounded-lg text-sm font-mono overflow-x-auto">
+                <div className="bg-background/80 p-3 rounded-lg text-sm font-mono overflow-x-auto">
                   {results.webhooks.map((webhook, index) => (
                     <div key={index} className="mb-1.5 last:mb-0 break-all">
                       {webhook}
@@ -1018,12 +989,12 @@ export default function CodeAnalyzer() {
 
           {results.connections.length > 0 && (
             <motion.div variants={itemVariants}>
-              <Card className="p-6 md:p-8 mb-8 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl">
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  <AlertTriangle className="h-5 w-5 mr-2 text-amber-400" />
+              <Card className="p-4 sm:p-6 md:p-8 mb-8 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl">
+                <h3 className="text-base sm:text-lg font-semibold mb-3 flex items-center">
+                  <AlertTriangle className="h-4 sm:h-5 w-4 sm:w-5 mr-2 text-amber-400" />
                   Suspicious Network Connections
                 </h3>
-                <div className="bg-background/80 p-4 rounded-lg text-sm font-mono overflow-x-auto">
+                <div className="bg-background/80 p-3 rounded-lg text-sm font-mono overflow-x-auto">
                   {results.connections.map((connection, index) => (
                     <div key={index} className="mb-1.5 last:mb-0 break-all">
                       {connection}
@@ -1042,10 +1013,10 @@ export default function CodeAnalyzer() {
             results.webhooks.length === 0 &&
             results.connections.length === 0 && (
               <motion.div variants={itemVariants}>
-                <Card className="p-6 md:p-8 mb-8 border-border/30 bg-green-900/20 backdrop-blur-sm rounded-xl">
+                <Card className="p-4 sm:p-6 md:p-8 mb-8 border-border/30 bg-green-900/20 backdrop-blur-sm rounded-xl">
                   <div className="flex items-center gap-3">
                     <div className="bg-green-500/20 p-2 rounded-full">
-                      <Cat className="h-5 w-5 text-green-400" />
+                      <Cat className="h-4 sm:h-5 w-4 sm:w-5 text-green-400" />
                     </div>
                     <p className="font-medium text-green-200">No suspicious behaviors or patterns detected.</p>
                   </div>
@@ -1060,11 +1031,11 @@ export default function CodeAnalyzer() {
           initial="hidden"
           animate="visible"
           variants={containerVariants}
-          className="mt-12 glass p-8 md:p-10 rounded-xl border border-border/30 shadow-lg max-w-7xl mx-auto w-full"
+          className="mt-8 sm:mt-12 glass p-4 sm:p-8 md:p-10 rounded-xl border border-border/30 shadow-lg max-w-7xl mx-auto w-full"
         >
           <motion.div variants={itemVariants} className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold flex items-center">
-              <Lightbulb className="mr-2 h-6 w-6 text-yellow-400" />
+            <h2 className="text-xl sm:text-2xl font-bold flex items-center">
+              <Lightbulb className="mr-2 h-5 sm:h-6 w-5 sm:w-6 text-yellow-400" />
               <span className="gradient-text">SkidCheck™ Results</span>
             </h2>
             <Button
@@ -1079,9 +1050,9 @@ export default function CodeAnalyzer() {
 
           <motion.div variants={itemVariants} className="mb-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-              <h3 className="text-xl font-semibold">Skid Score: {skidResults.skidScore}/100</h3>
+              <h3 className="text-lg sm:text-xl font-semibold">Skid Score: {skidResults.skidScore}/100</h3>
               <div
-                className={`px-4 py-1.5 rounded-full text-sm font-medium ${
+                className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-sm font-medium ${
                   skidResults.skidScore >= 80
                     ? "bg-purple-900/60 text-purple-200"
                     : skidResults.skidScore >= 60
@@ -1100,17 +1071,17 @@ export default function CodeAnalyzer() {
             <Progress
               value={skidResults.skidScore}
               max={100}
-              className="h-3 mb-4 bg-secondary/70 rounded-full overflow-hidden"
+              className="h-2 sm:h-3 mb-4 bg-secondary/70 rounded-full overflow-hidden"
               indicatorClassName={`${getSkidScoreColor(skidResults.skidScore)} transition-all duration-1000 ease-in-out`}
             />
 
-            <p className="text-muted-foreground mb-6">{skidResults.advice}</p>
+            <p className="text-muted-foreground mb-6 text-sm sm:text-base">{skidResults.advice}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
               {skidResults.cringeComments.length > 0 && (
                 <motion.div variants={itemVariants}>
-                  <Card className="p-5 md:p-6 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl h-full">
-                    <h3 className="text-md font-semibold mb-3 flex items-center">
+                  <Card className="p-3 sm:p-5 md:p-6 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl h-full">
+                    <h3 className="text-sm sm:text-md font-semibold mb-3 flex items-center">
                       <span className="text-yellow-400 mr-2">💬</span>
                       Cringe Comments
                     </h3>
@@ -1127,19 +1098,19 @@ export default function CodeAnalyzer() {
 
               {skidResults.webhookCount > 0 && (
                 <motion.div variants={itemVariants}>
-                  <Card className="p-5 md:p-6 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl h-full">
-                    <h3 className="text-md font-semibold mb-3 flex items-center">
+                  <Card className="p-3 sm:p-5 md:p-6 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl h-full">
+                    <h3 className="text-sm sm:text-md font-semibold mb-3 flex items-center">
                       <span className="text-blue-400 mr-2">🔗</span>
                       Webhook Usage
                     </h3>
                     <div className="bg-background/80 p-3 rounded-lg">
-                      <p className="text-foreground/80">
+                      <p className="text-foreground/80 text-sm sm:text-base">
                         {skidResults.webhookCount === 1
                           ? "1 webhook found"
                           : `${skidResults.webhookCount} webhooks found`}
                       </p>
                       {skidResults.webhookCount > 2 && (
-                        <p className="text-muted-foreground text-sm mt-2">
+                        <p className="text-muted-foreground text-xs sm:text-sm mt-2">
                           Using multiple webhooks is a common script kiddie technique
                         </p>
                       )}
@@ -1150,8 +1121,8 @@ export default function CodeAnalyzer() {
 
               {skidResults.hardcodedPaths.length > 0 && (
                 <motion.div variants={itemVariants}>
-                  <Card className="p-5 md:p-6 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl h-full">
-                    <h3 className="text-md font-semibold mb-3 flex items-center">
+                  <Card className="p-3 sm:p-5 md:p-6 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl h-full">
+                    <h3 className="text-sm sm:text-md font-semibold mb-3 flex items-center">
                       <span className="text-red-400 mr-2">📁</span>
                       Hardcoded Paths
                     </h3>
@@ -1168,8 +1139,8 @@ export default function CodeAnalyzer() {
 
               {skidResults.copyPastePatterns.length > 0 && (
                 <motion.div variants={itemVariants}>
-                  <Card className="p-5 md:p-6 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl h-full">
-                    <h3 className="text-md font-semibold mb-3 flex items-center">
+                  <Card className="p-3 sm:p-5 md:p-6 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl h-full">
+                    <h3 className="text-sm sm:text-md font-semibold mb-3 flex items-center">
                       <span className="text-green-400 mr-2">📋</span>
                       Copy-Paste Patterns
                     </h3>
@@ -1193,11 +1164,11 @@ export default function CodeAnalyzer() {
           initial="hidden"
           animate="visible"
           variants={containerVariants}
-          className="mt-12 glass p-8 md:p-10 rounded-xl border border-border/30 shadow-lg max-w-7xl mx-auto w-full"
+          className="mt-8 sm:mt-12 glass p-4 sm:p-8 md:p-10 rounded-xl border border-border/30 shadow-lg max-w-7xl mx-auto w-full"
         >
           <motion.div variants={itemVariants} className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold flex items-center">
-              <Search className="mr-2 h-6 w-6 text-purple-400" />
+            <h2 className="text-xl sm:text-2xl font-bold flex items-center">
+              <Search className="mr-2 h-5 sm:h-6 w-5 sm:w-6 text-black dark:text-purple-400" />
               <span className="gradient-text">Signature Finder Results</span>
             </h2>
             <Button
@@ -1212,16 +1183,19 @@ export default function CodeAnalyzer() {
 
           {signatureResults.length > 0 ? (
             <motion.div variants={itemVariants}>
-              <p className="text-muted-foreground mb-6">
+              <p className="text-muted-foreground mb-6 text-sm sm:text-base">
                 Found {signatureResults.length} suspicious signature{signatureResults.length !== 1 ? "s" : ""} in the
                 code.
               </p>
 
               <div className="space-y-4">
                 {signatureResults.map((signature, index) => (
-                  <Card key={index} className="p-5 md:p-6 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl">
+                  <Card
+                    key={index}
+                    className="p-3 sm:p-5 md:p-6 border-border/30 bg-secondary/30 backdrop-blur-sm rounded-xl"
+                  >
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-md font-semibold flex items-center">
+                      <h3 className="text-sm sm:text-md font-semibold flex items-center">
                         <AlertTriangle className={`mr-2 h-4 w-4 ${getSeverityColor(signature.severity)}`} />
                         {signature.name}
                       </h3>
@@ -1243,10 +1217,10 @@ export default function CodeAnalyzer() {
             </motion.div>
           ) : (
             <motion.div variants={itemVariants}>
-              <Card className="p-6 md:p-8 border-border/30 bg-green-900/20 backdrop-blur-sm rounded-xl">
+              <Card className="p-4 sm:p-6 md:p-8 border-border/30 bg-green-900/20 backdrop-blur-sm rounded-xl">
                 <div className="flex items-center gap-3">
                   <div className="bg-green-500/20 p-2 rounded-full">
-                    <Search className="h-5 w-5 text-green-400" />
+                    <Search className="h-4 sm:h-5 w-4 sm:w-5 text-green-400" />
                   </div>
                   <p className="font-medium text-green-200">No suspicious signatures detected in the code.</p>
                 </div>
@@ -1260,10 +1234,10 @@ export default function CodeAnalyzer() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
-        className="mt-20 pt-8 border-t border-border/30 text-center text-muted-foreground max-w-7xl mx-auto w-full"
+        className="mt-16 sm:mt-20 pt-6 sm:pt-8 border-t border-border/30 text-center text-muted-foreground max-w-7xl mx-auto w-full"
       >
         <p className="flex items-center justify-center gap-2">
-          <Cat className="h-4 w-4 text-purple-400" />
+          <Cat className="h-4 w-4 text-black dark:text-purple-400" />
           Owned by ValkDevices
         </p>
       </motion.footer>
