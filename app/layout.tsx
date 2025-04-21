@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "ByteMePlz",
   description: "Analyze code for potential security issues and malware indicators",
-    generator: 'v0.dev'
+    generator: 'PSX2323'
 }
 
 export default function RootLayout({
