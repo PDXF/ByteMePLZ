@@ -26,6 +26,7 @@
     --radius: 0.75rem;
   }
 
+  /* Dark mode */
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -47,11 +48,36 @@
     --input: 240 5% 15%;
     --ring: 252 100% 67%;
   }
+
+  /* Light Mode */
+  .light {
+    --background: #ffffff; /* White for light mode */
+    --foreground: 240 10% 3.9%;
+    --card: #ffffff;
+    --card-foreground: 240 10% 3.9%;
+    --popover: #ffffff;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 252 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 240 5% 10%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 240 5% 40%;
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 5% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 252 100% 50%;
+  }
 }
 
 body {
   @apply bg-background text-foreground;
   font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .collapsible-icon {
@@ -281,16 +307,5 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400 dark:bg-purple-400/70;
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
-
-/* Hide scrollbar but keep functionality */
-.scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
+  @apply bg-gray-400 dark:bg-purple-400;
 }
